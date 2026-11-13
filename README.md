@@ -1,130 +1,110 @@
 # Walmart Hurricane Analytics Project
 
-**University of Virginia | DS2002: Data Science Systems**
-
 ## Project Overview
 
-This project examines Walmart transaction, inventory, and product data to understand purchasing patterns surrounding hurricanes in Florida. The analysis focuses on data quality, product identifier inconsistencies, sales trends, and the business implications of inaccurate reporting.
+This project examines Walmart sales and inventory data from September 2024 to understand how data quality issues affect business analysis, particularly when evaluating product demand and potential hurricane-related purchasing patterns.
 
-The project uses Python, pandas, SQLite, and data visualization tools to clean and analyze the supplied datasets.
+The project uses Python, pandas, SQLite, and data visualization to clean transaction records, standardize inconsistent identifiers, consolidate fragmented product SKUs, and evaluate sales performance.
 
 ## Repository Structure
 
-```text
-walmart-hurricane-project/
-├── data/
-│   ├── walmart_transactions.csv
-│   ├── store_locations.csv
-│   ├── product_catalog.csv
-│   ├── distribution_centers.csv
-│   └── inventory_and_sales.db
-├── notebooks/
-│   └── [project notebook].ipynb
-├── CHARTER.md
-└── README.md
-```
+The repository contains:
+
+- `data/` — Original datasets used in the project.
+- `notebooks/` — Jupyter notebooks containing the data cleaning, validation, and analysis.
+- `CHARTER.md` — Team charter outlining project responsibilities.
+- `README.md` — Project overview, execution instructions, and reflections.
 
 ## Requirements
 
-- Python 3
-- Jupyter Notebook or JupyterLab
+The project uses Python 3 and Jupyter Notebook, along with the following libraries:
+
 - pandas
 - numpy
 - matplotlib
-- requests
 - sqlite3 (included with Python)
 
-Install the main Python packages using:
+Additional libraries may be required depending on the notebook.
 
-```bash
-python -m pip install pandas numpy matplotlib requests jupyter
-```
+## How to Run the Code
 
-Additional packages may be required depending on the imports in the notebook.
+1. Clone or download this GitHub repository.
+2. Open the project in Jupyter Notebook or Google Colab.
+3. Install any missing Python libraries.
+4. Open the notebook located in the `notebooks/` folder.
+5. Ensure the datasets in the `data/` folder are accessible and that the file paths in the notebook point to the correct locations.
+6. Run the notebook cells sequentially, beginning with the imports and data-loading steps.
+7. Review the cleaning decision log, validation results, and generated visualizations.
 
-## How to Run the Project
-
-1. Download the repository using **Code → Download ZIP** on GitHub, then extract the ZIP file.
-
-2. Open a terminal in the extracted project directory.
-
-3. Install the required Python packages using the command above.
-
-4. Launch Jupyter Notebook:
-
-   ```bash
-   jupyter notebook
-   ```
-
-5. Open the `notebooks` folder and select the project notebook.
-
-6. Verify that all file paths point to the supplied datasets in the `data` folder. Paths may need adjustment depending on the notebook's working directory.
-
-7. Run the notebook cells sequentially from top to bottom using **Kernel → Restart & Run All**.
-
-8. Review the cleaning outputs, decision logs, visualizations, and written analyses.
-
-The notebook must be run with access to the original datasets. Any sections requiring external weather data also depend on successful API access.
+The notebook should be run from beginning to end to ensure that all variables and cleaned datasets are created in the correct order.
 
 ## Data Cleaning and Validation
 
-The cleaning pipeline addresses several inconsistencies in the supplied transaction data:
+The original transaction dataset contained 25,562 records. After removing 30 exact duplicate records, the cleaned dataset contained 25,532 records.
 
-- Removed 30 exact duplicate records.
-- Standardized store identifiers from 60 variations into 12 unique store IDs.
-- Converted unit prices into numeric values.
-- Parsed valid transaction timestamps and flagged 884 missing timestamps.
-- Standardized category labels from 37 variations into 10 categories.
-- Retained and flagged 130 negative-quantity transactions for review.
-- Preserved original SKU identifiers while documenting proposed product mappings.
+The cleaning process addressed several issues:
 
-The cleaning process reduced the transaction dataset from 25,562 to 25,532 records. Validation checks confirmed that duplicate removal accounted for the 59-unit difference between original and cleaned quantity totals.
+- **Store identifiers:** Standardized inconsistent capitalization, spaces, and hyphens, reducing 60 variations to 12 unique store IDs.
+- **Product categories:** Standardized 37 category labels into 10 consistent categories.
+- **Unit prices:** Converted prices stored as text into numeric values. Validation confirmed no missing, negative, or zero prices.
+- **Timestamps:** Converted valid timestamps into a consistent datetime format while retaining and flagging 884 records with missing timestamps.
+- **Negative quantities:** Preserved and flagged 130 transactions with negative quantities because they may represent returns or inventory adjustments.
+- **Product identifiers:** Preserved original SKUs during cleaning and used product catalog mappings for the SKU consolidation analysis.
 
-A decision log documents each cleaning issue, the action taken, its justification, the number of affected records, and its status.
+All cleaning decisions were documented in a decision log with their justifications, affected records, and implementation status. This decision log is located within its own dropdown.
 
-## Question 2: SKU Consolidation
+Validation confirmed that the cleaned dataset contained no remaining exact duplicates, repeated transaction IDs, or missing store identifiers. The difference of 59 units between the original and cleaned quantity totals was fully explained by the 30 removed duplicate records.
 
-Question 2 investigates how inconsistent product identifiers affect the reported sales volume of Strawberry Pop-Tarts.
+## Analysis: SKU Consolidation
 
-Three SKU identifiers were examined:
+The analysis examined four product groups with fragmented SKU identifiers: Strawberry Pop-Tarts, First-Aid Kits, Light Beer, and White Bread.
 
-- `PT-12`
-- `PT_STRAWBERRY`
-- `SKU#459812`
+Consolidating equivalent product identifiers allowed sales quantities and estimated revenue to be evaluated at the product-group level.
 
-The analysis combines their quantities into one proposed product group while retaining the original transaction records.
+Estimated net revenue by product group:
 
-**Key findings:**
+| Product Group        | Estimated Net Revenue |
+| -------------------- | --------------------: |
+| Light Beer           |            $48,753.07 |
+| First-Aid Kits       |            $27,316.89 |
+| Strawberry Pop-Tarts |            $13,544.50 |
+| White Bread          |             $5,694.62 |
+| **Total**            |        **$95,309.08** |
 
-- Total Strawberry Pop-Tarts volume: 3,884 packages.
-- Packages with valid timestamps: 3,752.
-- Packages without valid timestamps: 132.
-- Peak daily sales: 540 packages on September 14, 2024.
-- Estimated net sales revenue: $13,544.50.
+Strawberry Pop-Tarts were examined in greater detail using daily sales data. Across September 2024, the three associated SKUs accounted for 3,884 net packages, including 3,752 packages with valid timestamps.
 
-The consolidated daily sales visualization demonstrates how analyzing fragmented SKU identifiers separately can obscure overall demand.
+Consolidated daily sales peaked at 540 packages on September 14, compared with 49 packages on September 1. This demonstrates how analyzing fragmented identifiers separately can obscure the total demand for a product.
 
-The analysis also compares estimated revenue across four proposed product groups: Strawberry Pop-Tarts, Light Beer, First-Aid Kits, and White Bread.
+The SKU mapping process preserved all 25,532 cleaned transaction records and the original cleaned quantity total of 49,343 units.
 
-## SQLite Database
+## Limitations
 
-The project includes `inventory_and_sales.db`, a SQLite database containing:
+The dataset contains 884 transactions with missing timestamps. These records were retained in overall calculations but could not be assigned to specific dates.
 
-- `daily_sales_summary`
-- `inventory_levels`
+Additionally, negative quantities were preserved because their exact business meaning could not be independently verified. Consequently, sales quantities and revenue should be interpreted as net estimates.
 
-These tables provide additional inventory and sales information for investigating potential discrepancies between recorded demand and inventory reporting.
+The daily sales analysis identifies changes in purchasing activity but does not establish whether those changes were caused by hurricane-related conditions.
 
-## Data Limitations
+The planned weather API integration was not completed, limiting the ability to investigate relationships between weather conditions and sales.
 
-Several limitations should be considered when interpreting the findings.
+## Reflection Questions
 
-Missing timestamps prevent some transactions from being assigned to specific sales dates. Negative quantities were preserved because their interpretation as returns or adjustments could not be independently verified. Proposed SKU consolidations also require product catalog verification before operational implementation.
+### 1. Data Quality Impact
 
-Daily sales trends and estimated revenue should therefore be interpreted within these data-quality constraints.
+One significant data quality issue was inconsistent SKU identifiers for equivalent products. For example, Strawberry Pop-Tarts appeared under three different identifiers, which made the product's total sales difficult to evaluate when each SKU was analyzed separately. By using the product catalog to group equivalent SKUs, I was able to calculate combined sales quantities and estimated revenue. This revealed that Strawberry Pop-Tarts reached 540 net packages sold on September 14, a much larger total than any individual SKU showed. Without identifying this issue, the analysis could have understated product demand and overlooked important purchasing patterns.
 
-## Project Status
+### 2. ETL Trade-offs
 
-The data-cleaning pipeline, cleaning decision log, and Question 2 SKU consolidation analysis have been completed and validated through reconciliation checks.
+One important decision involved handling missing timestamps. I chose to retain transactions with missing dates and flag them rather than remove them from the cleaned dataset. An alternative would have been to exclude these transactions entirely, which would have simplified the daily sales analysis but reduced the accuracy of overall sales totals. For Strawberry Pop-Tarts alone, 132 net packages could not be assigned to specific dates. Removing those transactions would have understated total product sales. Retaining them allowed the analysis to preserve overall quantities while acknowledging the limitations of the daily timeline.
 
-The remaining analytical sections and weather API integration should be reviewed separately for completeness before treating the entire project as finished.
+### 3. Pipeline Trust
+
+I agree that the data pipeline presents a major risk because errors introduced during cleaning or integration can affect every subsequent analysis. In this project, SKU consolidation was particularly sensitive because incorrectly grouping products could distort demand estimates. I addressed this by preserving original identifiers, using catalog mappings, and validating that the mapping process did not change the total number of transactions or the total quantity sold. I also checked for duplicate records, missing values, and inconsistent identifiers. These checks were important because a seemingly minor cleaning error could have produced misleading results that appeared reasonable in the final visualizations.
+
+### 4. Business vs. Data
+
+The board-games analysis required evaluating business risk using imperfect information. I was assigned this question, but the weather API integration that my analysis depended on was not completed by my teammate. As a result, I could not conduct the intended analysis or make a sufficiently supported recommendation. Making a business decision without the relevant weather information could lead to incorrect assumptions about purchasing patterns and inventory needs. With additional time, I would prioritize completing the data integration, validating the merged records, and comparing sales patterns before recommending any inventory changes.
+
+### 5. Team Collaboration
+
+Our team divided responsibilities across the data preparation, integration, and analysis tasks. I was responsible for data cleaning, documenting cleaning decisions, Question 2, and Question 5. I completed the cleaning pipeline, decision log, and SKU consolidation analysis for Question 2. However, my teammate did not complete the assigned weather API integration, which prevented me from completing Question 5 as planned. This experience highlighted the importance of communication and accountability when different parts of a project depend on one another. With another week, I would establish earlier progress checkpoints and clearer deadlines for dependent tasks. My strongest contribution was developing and validating a reproducible cleaning process that preserved the integrity of the transaction data. I cannot accurately assess my teammate's technical contribution because the assigned integration work was not delivered.
